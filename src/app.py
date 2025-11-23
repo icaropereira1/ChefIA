@@ -5,8 +5,8 @@ import os
 from dotenv import load_dotenv
 
 # --- IMPORTAÇÕES DO SEU NOVO MÓDULO ---
-from src.data_loader import processar_nova_ficha, filtrar_vendas, classificar_produto
-from src.ai_engine import executar_analise_menu, responder_chat_dados
+from src.dataloader import processar_nova_ficha, filtrar_vendas, classificar_produto
+from src.agentedeia import executar_analise_menu, responder_chat_dados
 
 # --- CARREGA VARIÁVEIS ---
 load_dotenv()
