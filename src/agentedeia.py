@@ -1,65 +1,84 @@
 from crewai import Agent, Task, Crew, Process, LLM
 
-# --- FUNÇÃO 1: ANÁLISE COMPLETA (Para o Botão) ---
-def executar_analise_menu(df_dados, api_key, modelo_nome, nome_usuario):
+# --- FUNÇÃO 1: ANÁLISE COMPLETA ---
+def executar_analise_menu(df_dados, api_key, modelo_nome):
     
-    # Prepara os dados
+    # Prepara os dados para o prompt
     csv_data = df_dados.to_csv(index=False, sep=';', decimal=',')
-    
-    # Configura o LLM
     llm = LLM(model=modelo_nome, api_key=api_key)
 
-    # Agentes (Baseados no seu Notebook, mas adaptados)
+    # --- AGENTE 1: O CÉREBRO TÉCNICO ---
     analista = Agent(
         role="Analista de Engenharia de Cardápio",
-        goal="Classificar itens na Matriz de Engenharia de Menu e achar oportunidades de lucro.",
-        backstory="""Você é um especialista em BI de Alimentos e Bebidas. 
-        Sua especialidade é cruzar lucratividade vs popularidade.""",
+        goal="Classificar itens na Matriz de Engenharia de Cardápio e fornecer recomendações financeiras precisas.",
+        backstory="""Você é um especialista em Business Intelligence (BI) com 10+ anos de experiência no setor de Restaurantes. 
+        Sua especialidade é engenharia de cardápio e otimização de mix de produtos. Você analisa dados friamente e com precisão matemática.""",
         llm=llm,
-        verbose=True
+        verbose=True,
+        allow_delegation=False
     )
 
+    # --- AGENTE 2: O PARCEIRO DE NEGÓCIOS ---
     consultor = Agent(
-        role="Consultor de Negócios de Restaurante",
-        goal=f"Traduzir a análise técnica para o {nome_usuario} com ações práticas.",
-        backstory=f"""Você é um consultor experiente e parceiro do {nome_usuario}. 
-        Você fala de forma direta, usa emojis e foca no ROI (Retorno sobre Investimento).""",
+        role="Consultor de Gestão Operacional",
+        goal="Converter análises técnicas em recomendações acionáveis com impacto financeiro claro e legível.",
+        backstory="""Você é um consultor de gestão experiente. Você traduz dados brutos em decisões práticas que aumentam lucro. 
+        Você escreve de forma limpa e organizada, usando Markdown.""",
         llm=llm,
-        verbose=True
+        verbose=True,
+        allow_delegation=False
     )
 
-    # Tarefas
-    t1 = Task(
+    # --- TAREFA 1: ANÁLISE TÉCNICA ---
+    analisa_performance_cardapio = Task(
         description=f"""
-        Analise estes dados de vendas:\n{csv_data}
+        Analise estes dados de vendas e custos do restaurante:
+        {csv_data}
+
+        Sua tarefa é:
+        1. Identificar os produtos 'Estrela', 'Burro de Carga', 'Quebra-cabeça' e 'Cão'.
+        2. Calcular métricas de popularidade e lucratividade.
         
-        1. Identifique 1 'Quebra-cabeça' (Alta Lucratividade, Baixa Venda).
-        2. Identifique 1 'Burro de Carga' (Baixa Lucratividade, Alta Venda).
+        IMPORTANTE SOBRE FORMATAÇÃO:
+        - Ao citar valores monetários, use estritamente o formato 'R$ 10,00' (com espaço após o R$).
+        - NUNCA use símbolos de dólar duplos ($$) ou simples ($) ao redor de números, pois isso quebra a exibição.
+        - Exemplo CORRETO: "Lucro de R$ 500,00"
+        - Exemplo ERRADO: "Lucro de $500$"
         """,
-        expected_output="Relatório técnico identificando os produtos e os dados deles.",
+        expected_output="Um relatório técnico em Markdown com a classificação dos itens e valores encontrados, sem formatação LaTeX.",
         agent=analista
     )
 
-    t2 = Task(
-        description=f"""
-        Escreva uma mensagem de WhatsApp para o {nome_usuario}.
-        Dê 2 dicas práticas baseadas nos produtos identificados pelo analista.
-        Use tom motivador e emojis.
+    # --- TAREFA 2: COMUNICAÇÃO ESTRATÉGICA ---
+    gera_recomendacoes_proativas = Task(
+        description="""
+        Com base no relatório técnico anterior:
+        1. Escreva 3 recomendações proativas e urgentes para o dono.
+        2. Foque em oportunidades óbvias (ex: aumentar preço do Burro de Carga, promover o Quebra-cabeça).
+        
+        Escreva em tom informal e direto, como uma mensagem de WhatsApp: 'E aí! Notei algumas coisas aqui...'
+        
+        REGRAS CRÍTICAS DE FORMATAÇÃO:
+        - Use Markdown padrão para negrito (**texto**) e listas (- item).
+        - Ao escrever valores em reais, use sempre 'R$ ' (com espaço).
+        - PROIBIDO usar cifrões para indicar fórmulas matemáticas. Escreva o valor como texto normal.
         """,
-        expected_output="Mensagem de WhatsApp pronta.",
+        expected_output="Texto curto e informal com 3 recomendações práticas em Markdown limpo e legível.",
         agent=consultor,
-        context=[t1]
+        context=[analisa_performance_cardapio]
     )
 
     crew = Crew(
         agents=[analista, consultor],
-        tasks=[t1, t2],
+        tasks=[analisa_performance_cardapio, gera_recomendacoes_proativas],
+        process=Process.sequential,
         verbose=True
     )
 
     return crew.kickoff()
 
-# --- FUNÇÃO 2: CHAT RÁPIDO (Para o Chatbot) ---
+
+# --- FUNÇÃO 2: CHAT RÁPIDO ---
 def responder_chat_dados(pergunta, df_contexto, api_key, modelo_nome):
     
     csv_contexto = df_contexto.to_csv(index=False, sep=';')
@@ -67,8 +86,8 @@ def responder_chat_dados(pergunta, df_contexto, api_key, modelo_nome):
 
     agente_chat = Agent(
         role="Assistente de Dados Financeiros",
-        goal="Responder perguntas pontuais sobre o faturamento.",
-        backstory="Você é um assistente prestativo com acesso aos dados de vendas.",
+        goal="Responder perguntas pontuais sobre o faturamento de forma clara e sem erros de formatação.",
+        backstory="Você é um assistente prestativo com acesso aos dados de vendas. Você prioriza a clareza na comunicação.",
         llm=llm,
         verbose=False
     )
@@ -79,8 +98,14 @@ def responder_chat_dados(pergunta, df_contexto, api_key, modelo_nome):
         {csv_contexto}
 
         PERGUNTA: {pergunta}
+        
+        DIRETRIZES DE RESPOSTA:
+        - Seja direto e use Markdown para destacar pontos importantes.
+        - Ao citar dinheiro, use o formato 'R$ 10,00'.
+        - EVITE completamente o uso do símbolo '$' para qualquer coisa que não seja o prefixo da moeda 'R$'. 
+        - O sistema de exibição não suporta LaTeX, então escreva tudo como texto simples.
         """,
-        expected_output="Resposta direta e conversacional.",
+        expected_output="Resposta direta e conversacional em Markdown limpo, sem caracteres especiais de matemática.",
         agent=agente_chat
     )
 

@@ -60,6 +60,7 @@ def filtrar_vendas(arquivo):
         df_vendas = df_vendas.fillna(0)
         df_vendas['popularidade'] = df_vendas['vendas_loja'] + df_vendas['vendas_delivery']
         df_vendas['receita_total'] = df_vendas['receita_loja'] + df_vendas['receita_delivery']
+        
         df_vendas['preco_venda'] = np.where(
             df_vendas['popularidade'] > 0,
             df_vendas['receita_total'] / df_vendas['popularidade'],
