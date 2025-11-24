@@ -197,7 +197,7 @@ if not vendas.empty and not custos.empty:
 
                 df_contexto = df_final.sort_values(by='receita_total', ascending=False).head(50)
                 
-                with st.chat_message("assistant"):
+                with st.chat_message("assistant", avatar="dataset/logovuca.png"):
                     with st.spinner("Analisando dados..."):
                         try:
                             resposta_obj = responder_chat_dados(prompt, df_contexto, api_key_final, modelo_selecionado)
