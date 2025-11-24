@@ -38,25 +38,34 @@ modelo_selecionado = None
 if provedor == "Gemini":
     modelos_google = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"]
     modelo_escolha = st.sidebar.selectbox("Modelo Google:", modelos_google, index=0)
-    modelo_selecionado = f"gemini/{modelo_escolha}"
+
+    # CORREÇÃO: formato correto para LiteLLM
+    modelo_selecionado = f"google_gemini/{modelo_escolha}"
+
+    # Pega chave automaticamente se existir
     env_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
-    api_key_final = env_key if env_key else st.sidebar.text_input("Google API Key:", type="password")
+
+    # Se não houver, pede ao usuário
+    api_key_final = env_key or st.sidebar.text_input("Google API Key:", type="password")
 
 elif provedor == "ChatGPT":
     modelos_openai = ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo"]
     modelo_escolha = st.sidebar.selectbox("Modelo OpenAI:", modelos_openai, index=1)
-    modelo_selecionado = f"openai/{modelo_escolha}"
-    env_key = os.getenv("OPENAI_API_KEY")
-    api_key_final = env_key if env_key else st.sidebar.text_input("OpenAI API Key:", type="password")
 
-if api_key_final:
+    modelo_selecionado = f"openai/{modelo_escolha}"
+
+    env_key = os.getenv("OPENAI_API_KEY")
+    api_key_final = env_key or st.sidebar.text_input("OpenAI API Key:", type="password")
+
+
+# --- Aplicação segura da chave ---
+if api_key_final and api_key_final.strip() != "":
     if provedor == "Gemini":
         os.environ["GOOGLE_API_KEY"] = api_key_final
-    else:
+    elif provedor == "ChatGPT":
         os.environ["OPENAI_API_KEY"] = api_key_final
 else:
-    st.sidebar.warning(f"⚠️ Necessário chave API para ativar a IA.")
-
+    st.sidebar.warning("⚠️ Necessário informar uma chave de API para ativar a IA.")
 
 col1, col2 = st.columns([1, 17]) 
 
