@@ -58,7 +58,7 @@ else:
     st.sidebar.warning(f"⚠️ Necessário chave API para ativar a IA.")
 
 
-col1, col2 = st.columns([1, 5]) 
+col1, col2 = st.columns([1, 17]) 
 
 with col1:
     # Ajuste o width para controlar o tamanho da imagem
