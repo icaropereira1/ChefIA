@@ -62,7 +62,7 @@ col1, col2 = st.columns([1, 5])
 
 with col1:
     # Ajuste o width para controlar o tamanho da imagem
-    st.image("assets/logovuca.png", width=80) 
+    st.image("dataset/logovuca.png", width=80) 
 
 with col2:
     # O título vai na coluna da direita
