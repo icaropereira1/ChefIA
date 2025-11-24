@@ -5,8 +5,6 @@ import os
 from dotenv import load_dotenv
 
 # --- IMPORTAÇÕES DOS MÓDULOS ---
-# Certifique-se de que os arquivos na pasta 'src' têm exatamente estes nomes:
-# src/data_loader.py e src/ai_engine.py
 from src.dataloader import processar_nova_ficha, filtrar_vendas, classificar_produto
 from src.agentedeia import executar_analise_menu, responder_chat_dados
 
@@ -32,19 +30,19 @@ def limpar_texto_ia(texto_obj):
 
 # --- BARRA LATERAL ---
 st.sidebar.title("🔧 Configurações da IA")
-provedor = st.sidebar.selectbox("Escolha a Inteligência:", ["Google Gemini", "OpenAI ChatGPT"])
+provedor = st.sidebar.selectbox("Escolha a Inteligência:", ["Gemini", "ChatGPT"])
 
 api_key_final = None
 modelo_selecionado = None
 
-if provedor == "Google Gemini":
+if provedor == "Gemini":
     modelos_google = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"]
     modelo_escolha = st.sidebar.selectbox("Modelo Google:", modelos_google, index=0)
     modelo_selecionado = f"gemini/{modelo_escolha}"
     env_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
     api_key_final = env_key if env_key else st.sidebar.text_input("Google API Key:", type="password")
 
-elif provedor == "OpenAI ChatGPT":
+elif provedor == "ChatGPT":
     modelos_openai = ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo"]
     modelo_escolha = st.sidebar.selectbox("Modelo OpenAI:", modelos_openai, index=1)
     modelo_selecionado = f"openai/{modelo_escolha}"
@@ -54,15 +52,21 @@ elif provedor == "OpenAI ChatGPT":
 if api_key_final:
     if provedor == "Google Gemini":
         os.environ["GOOGLE_API_KEY"] = api_key_final
-        os.environ["GEMINI_API_KEY"] = api_key_final
     else:
         os.environ["OPENAI_API_KEY"] = api_key_final
 else:
     st.sidebar.warning(f"⚠️ Necessário chave API para ativar a IA.")
 
 
-# --- TELA PRINCIPAL ---
-st.title("VUCA Smart 🧠")
+col1, col2 = st.columns([1, 5]) 
+
+with col1:
+    # Ajuste o width para controlar o tamanho da imagem
+    st.image("assets/logovuca.png", width=80) 
+
+with col2:
+    # O título vai na coluna da direita
+    st.title("VUCA Smart 🧠")
 
 if 'user_name' not in st.session_state:
     st.session_state.user_name = ''
